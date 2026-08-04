@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Zap, LayoutDashboard, MapPin, BarChart3, TestTube2, History, Settings, User, CloudSun 
+  Zap, LayoutDashboard, MapPin, BarChart3, TestTube2, History, Settings 
 } from 'lucide-react';
 
 export default function SidebarNav({ activeTab, setActiveTab }) {
@@ -14,13 +14,13 @@ export default function SidebarNav({ activeTab, setActiveTab }) {
   ];
 
   return (
-    <aside style={{
+    <aside className="desktop-sidebar" style={{
       width: '240px',
       flexShrink: 0,
       background: 'rgba(255, 255, 255, 0.65)',
       backdropFilter: 'blur(24px) saturate(180%)',
       borderRight: '1px solid rgba(255, 255, 255, 0.8)',
-      boxShadow: '4px 0 25px rgba(14, 165, 233, 0.05)',
+      boxShadow: '4px 0 25px rgba(0, 88, 190, 0.05)',
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
@@ -35,19 +35,19 @@ export default function SidebarNav({ activeTab, setActiveTab }) {
         {/* Brand Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '2rem', padding: '0 0.4rem' }}>
           <div style={{
-            background: 'linear-gradient(135deg, #0284c7, #06b6d4)',
+            background: 'linear-gradient(135deg, #0058be, #06b6d4)',
             padding: '0.55rem',
             borderRadius: '14px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 18px rgba(2, 132, 199, 0.35)',
+            boxShadow: '0 4px 18px rgba(0, 88, 190, 0.35)',
             border: '1px solid rgba(255, 255, 255, 0.7)'
           }}>
             <Zap size={22} color="#ffffff" />
           </div>
           <div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: 800, background: 'linear-gradient(90deg, #0f172a, #0284c7)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: 800, background: 'linear-gradient(90deg, #191c1e, #0058be)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               VoltCast
             </h1>
             <span style={{ fontSize: '0.725rem', color: 'var(--text-muted)', fontWeight: 600 }}>Command Center</span>
@@ -64,9 +64,9 @@ export default function SidebarNav({ activeTab, setActiveTab }) {
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 style={{
-                  background: isActive ? 'linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(124, 58, 237, 0.1))' : 'transparent',
-                  border: `1px solid ${isActive ? 'rgba(14, 165, 233, 0.45)' : 'transparent'}`,
-                  color: isActive ? '#0284c7' : 'var(--text-muted)',
+                  background: isActive ? 'linear-gradient(135deg, rgba(0, 88, 190, 0.15), rgba(124, 58, 237, 0.1))' : 'transparent',
+                  border: `1px solid ${isActive ? 'rgba(0, 88, 190, 0.45)' : 'transparent'}`,
+                  color: isActive ? '#0058be' : 'var(--text-muted)',
                   fontFamily: 'var(--font-heading)',
                   fontWeight: isActive ? 800 : 600,
                   fontSize: '0.875rem',
@@ -78,10 +78,10 @@ export default function SidebarNav({ activeTab, setActiveTab }) {
                   gap: '0.7rem',
                   transition: 'all 0.2s ease',
                   textAlign: 'left',
-                  boxShadow: isActive ? '0 4px 15px rgba(14, 165, 233, 0.12)' : 'none'
+                  boxShadow: isActive ? '0 4px 15px rgba(0, 88, 190, 0.12)' : 'none'
                 }}
               >
-                <Icon size={18} color={isActive ? '#0284c7' : 'var(--text-muted)'} />
+                <Icon size={18} color={isActive ? '#0058be' : 'var(--text-muted)'} />
                 {item.label}
               </button>
             );

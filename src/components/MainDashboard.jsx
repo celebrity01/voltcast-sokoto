@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import GoogleMapView from './GoogleMapView';
 import HourlyForecastTimeline from './HourlyForecastTimeline';
 import { SOKOTO_DISTRICTS } from '../services/mockDataGenerator';
-import { Sun, Droplets, Wind, Gauge, AlertTriangle, ShieldCheck, Thermometer, Compass, Clock, Zap } from 'lucide-react';
+import { Sun, Droplets, Wind, Zap } from 'lucide-react';
 
 export default function MainDashboard({ onNavigateToPredictor }) {
   const [selectedDistrictId, setSelectedDistrictId] = useState('sokoto_north');
@@ -29,7 +29,7 @@ export default function MainDashboard({ onNavigateToPredictor }) {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <span className="badge badge-emerald">Live GIS Stream Active</span>
+          <span className="badge badge-emerald">Live GIS Active</span>
           <button 
             className="btn-primary"
             style={{ fontSize: '0.825rem', padding: '0.5rem 1rem' }}
@@ -41,18 +41,18 @@ export default function MainDashboard({ onNavigateToPredictor }) {
       </div>
 
       {/* Main Grid: Expansive Map (Left 8 Cols) + Current Conditions Side Panel (Right 4 Cols) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.25rem', minHeight: '440px' }}>
+      <div className="main-dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.25rem', minHeight: '440px' }}>
         
-        {/* Expansive Map (8 cols) */}
-        <div style={{ gridColumn: 'span 8', minHeight: '440px', display: 'flex', flexDirection: 'column' }}>
+        {/* Expansive Map (8 cols on desktop, 12 cols on mobile) */}
+        <div className="map-container-col" style={{ gridColumn: 'span 8', minHeight: '440px', display: 'flex', flexDirection: 'column' }}>
           <GoogleMapView 
             selectedDistrictId={selectedDistrictId}
             onSelectDistrict={(id) => setSelectedDistrictId(id)}
           />
         </div>
 
-        {/* Current Conditions Side Panel (4 cols) - Matching Image 1 */}
-        <div className="glass-card" style={{ gridColumn: 'span 4', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        {/* Current Conditions Side Panel (4 cols on desktop, 12 cols on mobile) */}
+        <div className="glass-card side-panel-col" style={{ gridColumn: 'span 4', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem', paddingBottom: '0.6rem', borderBottom: '1px solid rgba(226, 232, 240, 0.7)' }}>
@@ -72,16 +72,15 @@ export default function MainDashboard({ onNavigateToPredictor }) {
                   {selectedDistrict.weather}
                 </div>
               </div>
-              <div style={{ background: 'rgba(14, 165, 233, 0.12)', padding: '1.1rem', borderRadius: '50%', boxShadow: '0 8px 25px rgba(14, 165, 233, 0.15)' }}>
-                <Sun size={48} color="#0284c7" />
+              <div style={{ background: 'rgba(0, 88, 190, 0.12)', padding: '1.1rem', borderRadius: '50%', boxShadow: '0 8px 25px rgba(0, 88, 190, 0.15)' }}>
+                <Sun size={48} color="#0058be" />
               </div>
             </div>
 
-            {/* Metrics List (Humidity, UV, Wind, Pressure) */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1.5rem' }}>
+            {/* Metrics List */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', marginTop: '1.25rem' }}>
               
-              {/* Humidity */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255, 255, 255, 0.75)', borderRadius: '12px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255, 255, 255, 0.75)', borderRadius: '14px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   <Droplets size={18} color="var(--liquid-cyan)" />
                   <div>
@@ -92,8 +91,7 @@ export default function MainDashboard({ onNavigateToPredictor }) {
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Optimal</div>
               </div>
 
-              {/* UV Index */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255, 255, 255, 0.75)', borderRadius: '12px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255, 255, 255, 0.75)', borderRadius: '14px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   <Sun size={18} color="var(--liquid-amber)" />
                   <div>
@@ -104,8 +102,7 @@ export default function MainDashboard({ onNavigateToPredictor }) {
                 <div style={{ fontSize: '0.75rem', color: 'var(--liquid-amber)', fontWeight: 700 }}>High</div>
               </div>
 
-              {/* Wind Speed */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255, 255, 255, 0.75)', borderRadius: '12px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', background: 'rgba(255, 255, 255, 0.75)', borderRadius: '14px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   <Wind size={18} color="var(--liquid-teal)" />
                   <div>
@@ -120,14 +117,14 @@ export default function MainDashboard({ onNavigateToPredictor }) {
           </div>
 
           {/* Grid Risk Status Banner */}
-          <div style={{ marginTop: '1.25rem', padding: '0.85rem 1rem', borderRadius: '12px', background: riskPct > 55 ? 'rgba(225, 29, 72, 0.12)' : 'rgba(14, 165, 233, 0.12)', border: `1px solid ${riskPct > 55 ? 'rgba(225, 29, 72, 0.3)' : 'rgba(14, 165, 233, 0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ marginTop: '1.25rem', padding: '0.85rem 1rem', borderRadius: '14px', background: riskPct > 55 ? 'rgba(218, 52, 55, 0.12)' : 'rgba(0, 88, 190, 0.12)', border: `1px solid ${riskPct > 55 ? 'rgba(218, 52, 55, 0.3)' : 'rgba(0, 88, 190, 0.3)'}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div>
               <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>OUTAGE RISK LEVEL</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: riskPct > 55 ? '#be123c' : '#0369a1' }}>
+              <div style={{ fontSize: '1.1rem', fontWeight: 800, color: riskPct > 55 ? '#be123c' : '#0058be' }}>
                 {riskPct}% ({riskPct > 55 ? 'HIGH RISK' : 'MODERATE'})
               </div>
             </div>
-            <Zap size={22} color={riskPct > 55 ? '#be123c' : '#0369a1'} />
+            <Zap size={22} color={riskPct > 55 ? '#be123c' : '#0058be'} />
           </div>
 
         </div>

@@ -7,6 +7,7 @@ import AnalyticsView from './components/AnalyticsView';
 import ModelEvaluation from './components/ModelEvaluation';
 import OutageLogs from './components/OutageLogs';
 import { SOKOTO_DISTRICTS } from './services/mockDataGenerator';
+import { LayoutDashboard, Zap, MapPin, BarChart3, TestTube2, History } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -43,10 +44,18 @@ export default function App() {
     setActiveTab('predictor');
   };
 
+  const mobileNavItems = [
+    { id: 'dashboard', label: 'Command', icon: LayoutDashboard },
+    { id: 'predictor', label: 'Predictor', icon: Zap },
+    { id: 'heatmap', label: 'Heatmap', icon: MapPin },
+    { id: 'trends', label: 'Analytics', icon: BarChart3 },
+    { id: 'logs', label: 'Logs', icon: History },
+  ];
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', overflowX: 'hidden' }}>
       
-      {/* Left Glass Sidebar Navigation (Matching Image 1 & 2) */}
+      {/* Desktop Left Glass Sidebar Navigation */}
       <SidebarNav 
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -87,6 +96,24 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* Mobile Bottom Navigation Bar (Visible on Mobile View <= 768px) */}
+      <nav className="mobile-bottom-nav">
+        {mobileNavItems.map(item => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              className={`mobile-nav-btn ${isActive ? 'active' : ''}`}
+              onClick={() => setActiveTab(item.id)}
+            >
+              <Icon size={18} />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
 
     </div>
   );
