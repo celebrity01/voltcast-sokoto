@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Loader } from '@googlemaps/js-api-loader';
 import { SOKOTO_DISTRICTS } from '../services/mockDataGenerator';
-import { Search, MapPin, Layers, RefreshCw, Sun, CloudRain, Zap, Thermometer } from 'lucide-react';
+import { Search, MapPin, CloudRain, Zap } from 'lucide-react';
 
 const DARK_CYAN_MAP_STYLE = [
   { elementType: "geometry", stylers: [{ color: "#081321" }] },
@@ -21,56 +20,85 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
   const mapRef = useRef(null);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const googleMapInstance = useRef(null);
 
   useEffect(() => {
-    // Attempt loading Google Maps API using DEMO or env key
-    const loader = new Loader({
-      apiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-      version: 'weekly',
-      libraries: ['places']
-    });
-
-    loader.load().then((google) => {
-      if (!mapRef.current) return;
-      const map = new google.maps.Map(mapRef.current, {
-        center: { lat: 13.0622, lng: 5.2339 }, // Sokoto, Nigeria
-        zoom: 11,
-        styles: DARK_CYAN_MAP_STYLE,
-        disableDefaultUI: true,
-        zoomControl: true,
-      });
-
-      googleMapInstance.current = map;
-      setMapLoaded(true);
-
-      // Add Markers for Sokoto Districts
-      SOKOTO_DISTRICTS.forEach((district) => {
-        const marker = new google.maps.Marker({
-          position: { lat: district.lat, lng: district.lng },
-          map: map,
-          title: `${district.name} - ${district.temp}°C`,
-        });
-
-        const infoWindow = new google.maps.InfoWindow({
-          content: `
-            <div style="color: #0f172a; padding: 4px; font-family: sans-serif;">
-              <strong style="font-size: 14px;">${district.name}</strong><br/>
-              <span>Temp: <b>${district.temp}°C</b> (${district.weather})</span><br/>
-              <span>Risk: <b>${Math.round(district.baselineRisk * 100)}%</b></span>
-            </div>
-          `
-        });
-
-        marker.addListener('click', () => {
-          infoWindow.open(map, marker);
-          onSelectDistrict(district.id);
-        });
-      });
-    }).catch(() => {
-      // Fallback to interactive canvas map if API key is not active
+    const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    
+    // If no explicit API key is set, safely fallback to the interactive GIS Canvas map
+    if (!apiKey) {
       setMapLoaded(false);
-    });
+      return;
+    }
+
+    let isMounted = true;
+
+    // Safely load Google Maps via script tag injection
+    const scriptId = 'google-maps-script';
+    let script = document.getElementById(scriptId);
+
+    const initMap = () => {
+      if (!isMounted || !mapRef.current || !window.google || !window.google.maps) return;
+      try {
+        const map = new window.google.maps.Map(mapRef.current, {
+          center: { lat: 13.0622, lng: 5.2339 }, // Sokoto, Nigeria
+          zoom: 11,
+          styles: DARK_CYAN_MAP_STYLE,
+          disableDefaultUI: true,
+          zoomControl: true,
+        });
+
+        setMapLoaded(true);
+
+        SOKOTO_DISTRICTS.forEach((district) => {
+          const marker = new window.google.maps.Marker({
+            position: { lat: district.lat, lng: district.lng },
+            map: map,
+            title: `${district.name} - ${district.temp}°C`,
+          });
+
+          const infoWindow = new window.google.maps.InfoWindow({
+            content: `
+              <div style="color: #0f172a; padding: 4px; font-family: sans-serif;">
+                <strong style="font-size: 14px;">${district.name}</strong><br/>
+                <span>Temp: <b>${district.temp}°C</b> (${district.weather})</span><br/>
+                <span>Risk: <b>${Math.round(district.baselineRisk * 100)}%</b></span>
+              </div>
+            `
+          });
+
+          marker.addListener('click', () => {
+            infoWindow.open(map, marker);
+            onSelectDistrict(district.id);
+          });
+        });
+      } catch (err) {
+        console.warn('Google Maps initialization fallback active:', err);
+        setMapLoaded(false);
+      }
+    };
+
+    if (window.google && window.google.maps) {
+      initMap();
+    } else {
+      if (!script) {
+        script = document.createElement('script');
+        script.id = scriptId;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
+        script.async = true;
+        script.defer = true;
+        script.onload = initMap;
+        script.onerror = () => {
+          if (isMounted) setMapLoaded(false);
+        };
+        document.head.appendChild(script);
+      } else {
+        script.addEventListener('load', initMap);
+      }
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, [onSelectDistrict]);
 
   const filteredDistricts = SOKOTO_DISTRICTS.filter(d => 
@@ -94,7 +122,7 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
               width: '100%',
               background: 'rgba(15, 23, 42, 0.85)',
               backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(14, 165, 233, 0.4)',
+              border: '1px solid rgba(0, 88, 190, 0.4)',
               borderRadius: '9999px',
               padding: '0.6rem 1rem 0.6rem 2.5rem',
               color: '#ffffff',
@@ -116,7 +144,7 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
           {/* Cyber Grid Lines Overlay */}
           <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0.15 }}>
             <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse">
-              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#0284c7" strokeWidth="1"/>
+              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="#0058be" strokeWidth="1"/>
             </pattern>
             <rect width="100%" height="100%" fill="url(#grid)" />
           </svg>
@@ -131,14 +159,14 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
                   key={district.id}
                   onClick={() => onSelectDistrict(district.id)}
                   style={{
-                    background: isSelected ? 'rgba(14, 165, 233, 0.25)' : 'rgba(15, 23, 42, 0.65)',
+                    background: isSelected ? 'rgba(0, 88, 190, 0.25)' : 'rgba(15, 23, 42, 0.65)',
                     border: `1px solid ${isSelected ? 'var(--liquid-cyan)' : 'rgba(255, 255, 255, 0.15)'}`,
                     borderRadius: '14px',
                     padding: '0.75rem',
                     cursor: 'pointer',
                     backdropFilter: 'blur(12px)',
                     transition: 'all 0.25s ease',
-                    boxShadow: isSelected ? '0 0 20px rgba(14, 165, 233, 0.4)' : '0 4px 12px rgba(0,0,0,0.2)'
+                    boxShadow: isSelected ? '0 0 20px rgba(0, 88, 190, 0.4)' : '0 4px 12px rgba(0,0,0,0.2)'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
@@ -147,14 +175,14 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
                     <span>{district.temp}°C</span>
-                    <span style={{ color: riskPct > 55 ? '#ef4444' : '#10b981', fontWeight: 700 }}>{riskPct}% Risk</span>
+                    <span style={{ color: riskPct > 55 ? '#da3437' : '#059669', fontWeight: 700 }}>{riskPct}% Risk</span>
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div style={{ position: 'absolute', bottom: '1rem', left: '1.5rem', zIndex: 10, display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          <div style={{ position: 'absolute', bottom: '1rem', left: '1.5rem', zIndex: 10, display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.7)' }}>
             <MapPin size={14} color="var(--liquid-cyan)" /> Sokoto Regional GIS Grid | Centered 13.0622° N, 5.2339° E
           </div>
         </div>
