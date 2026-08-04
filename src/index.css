@@ -1,0 +1,372 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-light: #f0f7ff;
+  --bg-card: rgba(255, 255, 255, 0.68);
+  --bg-card-hover: rgba(255, 255, 255, 0.88);
+  --bg-card-solid: #ffffff;
+  
+  --border-light: rgba(255, 255, 255, 0.9);
+  --border-subtle: rgba(148, 163, 184, 0.22);
+  --border-highlight: rgba(14, 165, 233, 0.45);
+  
+  --liquid-cyan: #0284c7;
+  --liquid-teal: #0d9488;
+  --liquid-emerald: #059669;
+  --liquid-amber: #d97706;
+  --liquid-crimson: #e11d48;
+  --liquid-violet: #7c3aed;
+  
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #64748b;
+
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Plus Jakarta Sans', sans-serif;
+
+  --glass-shadow: 0 20px 40px -15px rgba(14, 165, 233, 0.12), 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #f0f7ff;
+  background-image: 
+    radial-gradient(at 10% 15%, rgba(14, 165, 233, 0.18) 0px, transparent 45%),
+    radial-gradient(at 90% 10%, rgba(124, 58, 237, 0.14) 0px, transparent 50%),
+    radial-gradient(at 45% 85%, rgba(13, 148, 136, 0.16) 0px, transparent 50%),
+    radial-gradient(at 85% 80%, rgba(244, 63, 94, 0.10) 0px, transparent 40%);
+  background-attachment: fixed;
+  color: var(--text-main);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Glass Card styling - Light Water Liquid */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid var(--border-light);
+  border-radius: 20px;
+  box-shadow: 
+    0 12px 35px -10px rgba(14, 165, 233, 0.12),
+    0 2px 8px rgba(15, 23, 42, 0.04),
+    inset 0 1.5px 2px rgba(255, 255, 255, 0.95);
+  transition: border-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 1);
+  background: var(--bg-card-hover);
+}
+
+.glass-card-interactive:hover {
+  border-color: var(--border-highlight);
+  transform: translateY(-3px);
+  box-shadow: 
+    0 18px 45px -10px rgba(14, 165, 233, 0.22),
+    0 4px 12px rgba(15, 23, 42, 0.06),
+    inset 0 2px 3px rgba(255, 255, 255, 1);
+}
+
+/* Header & Ticker - Translucent Liquid Glass */
+.app-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  box-shadow: 0 4px 20px rgba(14, 165, 233, 0.06);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  padding: 0.85rem 1.5rem;
+}
+
+.ticker-bar {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 12px;
+  padding: 0.45rem 1.1rem;
+  font-size: 0.825rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.8);
+}
+.ticker-bar::-webkit-scrollbar { display: none; }
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.green { background: #10b981; box-shadow: 0 0 10px #10b981; animation: pulse 2s infinite; }
+.status-dot.amber { background: #f59e0b; box-shadow: 0 0 10px #f59e0b; animation: pulse 1.5s infinite; }
+.status-dot.red { background: #ef4444; box-shadow: 0 0 10px #ef4444; animation: pulse 1s infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+/* Navigation Tabs - Fluid Water Liquid Pills */
+.nav-tab {
+  background: rgba(255, 255, 255, 0.4);
+  border: 1px solid rgba(226, 232, 240, 0.6);
+  color: var(--text-muted);
+  font-family: var(--font-heading);
+  font-weight: 600;
+  padding: 0.6rem 1.25rem;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 0.9rem;
+}
+
+.nav-tab:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(14, 165, 233, 0.3);
+  transform: translateY(-1px);
+}
+
+.nav-tab.active {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(124, 58, 237, 0.12));
+  border: 1px solid rgba(14, 165, 233, 0.5);
+  color: #0284c7;
+  box-shadow: 
+    0 6px 20px rgba(14, 165, 233, 0.15),
+    inset 0 1px 2px rgba(255, 255, 255, 0.9);
+}
+
+/* Form Controls - Light Translucent Inputs */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+}
+
+.form-label {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.form-control {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(203, 213, 225, 0.7);
+  border-radius: 12px;
+  color: var(--text-main);
+  padding: 0.65rem 0.9rem;
+  font-family: var(--font-body);
+  font-size: 0.925rem;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.2s ease;
+  width: 100%;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.form-control:focus {
+  background: #ffffff;
+  border-color: var(--liquid-cyan);
+  box-shadow: 0 0 0 3.5px rgba(14, 165, 233, 0.18), 0 2px 8px rgba(14, 165, 233, 0.08);
+}
+
+select.form-control option {
+  background-color: #ffffff;
+  color: var(--text-main);
+}
+
+/* Custom Water Liquid Range Slider */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+}
+input[type=range]:focus { outline: none; }
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 8px;
+  cursor: pointer;
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.2), rgba(124, 58, 237, 0.2));
+  border-radius: 6px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+input[type=range]::-webkit-slider-thumb {
+  height: 22px;
+  width: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #06b6d4);
+  cursor: pointer;
+  -webkit-appearance: none;
+  margin-top: -7px;
+  border: 2.5px solid #ffffff;
+  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.4);
+}
+
+/* Badge tags - Light Glossy */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+
+.badge-emerald { background: rgba(16, 185, 129, 0.12); color: #047857; border: 1px solid rgba(16, 185, 129, 0.35); }
+.badge-amber { background: rgba(245, 158, 11, 0.12); color: #b45309; border: 1px solid rgba(245, 158, 11, 0.35); }
+.badge-crimson { background: rgba(225, 29, 72, 0.12); color: #be123c; border: 1px solid rgba(225, 29, 72, 0.35); }
+.badge-cyan { background: rgba(14, 165, 233, 0.12); color: #0369a1; border: 1px solid rgba(14, 165, 233, 0.35); }
+.badge-violet { background: rgba(124, 58, 237, 0.12); color: #6d28d9; border: 1px solid rgba(124, 58, 237, 0.35); }
+
+/* Meter Ring / Probability Circle */
+.risk-gauge-container {
+  position: relative;
+  width: 210px;
+  height: 210px;
+  margin: 0 auto;
+}
+
+.risk-gauge-svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 6px 12px rgba(14, 165, 233, 0.15));
+}
+
+.risk-gauge-bg {
+  fill: none;
+  stroke: rgba(226, 232, 240, 0.6);
+  stroke-width: 14;
+}
+
+.risk-gauge-val {
+  fill: none;
+  stroke-width: 14;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
+}
+
+.risk-gauge-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.risk-gauge-number {
+  font-family: var(--font-heading);
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Heatmap Grid */
+.grid-heatmap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+/* Buttons - Liquid Glass Gradient */
+.btn-primary {
+  background: linear-gradient(135deg, #0284c7, #2563eb);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 6px 20px rgba(2, 132, 199, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.4);
+  transition: all 0.25s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(2, 132, 199, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.6);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  color: var(--text-main);
+  border-radius: 12px;
+  padding: 0.65rem 1.2rem;
+  font-family: var(--font-heading);
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  transition: all 0.25s ease;
+}
+
+.btn-secondary:hover {
+  background: #ffffff;
+  border-color: rgba(14, 165, 233, 0.4);
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.15);
+}
+
+/* Table Light Glass */
+table th {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+table tr {
+  border-bottom: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.6);
+}
