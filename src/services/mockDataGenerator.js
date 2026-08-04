@@ -1,16 +1,65 @@
 // Sokoto State Grid & Outage Mock Data Generator
 
 export const SOKOTO_DISTRICTS = [
-  { id: 'sokoto_north', name: 'Sokoto North', type: 'Commercial & Government', baselineRisk: 0.35, feeders: ['Central Market 11kV', 'Government House 33kV', 'Kano Road Feeder'], currentStatus: 'Normal' },
-  { id: 'sokoto_south', name: 'Sokoto South', type: 'High Density Residential', baselineRisk: 0.45, feeders: ['Runjin Sambo 11kV', 'Ahmadu Bello Loop', 'Arkilla Feeder'], currentStatus: 'Warning' },
-  { id: 'wamako', name: 'Wamako', type: 'Educational & Suburban', baselineRisk: 0.40, feeders: ['33kV Wamako Trunk Line', 'UDUS Main Campus Feeder', 'Kalambaina Industrial'], currentStatus: 'Normal' },
-  { id: 'dange_shuni', name: 'Dange Shuni', type: 'Semi-Urban & Agricultural', baselineRisk: 0.55, feeders: ['Dange 33kV Line', 'Shuni Distribution Loop'], currentStatus: 'Outage Risk' },
-  { id: 'bodinga', name: 'Bodinga', type: 'Residential & Agricultural', baselineRisk: 0.50, feeders: ['Bodinga 11kV Circuit', 'Silame-Bodinga Tie Line'], currentStatus: 'Normal' },
-  { id: 'kware', name: 'Kware', type: 'Agricultural & Rural', baselineRisk: 0.58, feeders: ['Kware Feeder 11kV', 'Goronyo Line'], currentStatus: 'Normal' },
-  { id: 'gwadabawa', name: 'Gwadabawa', type: 'Border Sector', baselineRisk: 0.60, feeders: ['Gwadabawa 33kV Line', 'Tangaza Tie'], currentStatus: 'Outage Risk' },
-  { id: 'tambuwal', name: 'Tambuwal', type: 'Western Hub', baselineRisk: 0.48, feeders: ['Tambuwal Central Feeder', 'Jega-Tambuwal 33kV'], currentStatus: 'Normal' },
-  { id: 'illela', name: 'Illela', type: 'Border Trade Zone', baselineRisk: 0.65, feeders: ['Illela International Circuit'], currentStatus: 'Outage Risk' },
-  { id: 'silame', name: 'Silame', type: 'Riverine Sector', baselineRisk: 0.62, feeders: ['Silame Rural Circuit'], currentStatus: 'Normal' },
+  { id: 'sokoto_north', name: 'Sokoto North', type: 'Commercial & Government', baselineRisk: 0.35, feeders: ['Central Market 11kV', 'Government House 33kV', 'Kano Road Feeder'], currentStatus: 'Normal', lat: 13.0622, lng: 5.2339, temp: 38, weather: 'Sunny', humidity: 45, uvIndex: '8 (High)', wind: '14 km/h NE' },
+  { id: 'sokoto_south', name: 'Sokoto South', type: 'High Density Residential', baselineRisk: 0.45, feeders: ['Runjin Sambo 11kV', 'Ahmadu Bello Loop', 'Arkilla Feeder'], currentStatus: 'Warning', lat: 13.0489, lng: 5.2415, temp: 40, weather: 'Extreme Heat', humidity: 40, uvIndex: '9 (Very High)', wind: '18 km/h E' },
+  { id: 'wamako', name: 'Wamako', type: 'Educational & Suburban', baselineRisk: 0.40, feeders: ['33kV Wamako Trunk Line', 'UDUS Main Campus Feeder', 'Kalambaina Industrial'], currentStatus: 'Normal', lat: 13.0381, lng: 5.1664, temp: 39, weather: 'Scattered Clouds', humidity: 52, uvIndex: '7 (High)', wind: '12 km/h NE' },
+  { id: 'dange_shuni', name: 'Dange Shuni', type: 'Semi-Urban & Agricultural', baselineRisk: 0.55, feeders: ['Dange 33kV Line', 'Shuni Distribution Loop'], currentStatus: 'Outage Risk', lat: 12.8531, lng: 5.3444, temp: 41, weather: 'Thermal Heatwave', humidity: 38, uvIndex: '10 (Extreme)', wind: '22 km/h E' },
+  { id: 'bodinga', name: 'Bodinga', type: 'Residential & Agricultural', baselineRisk: 0.50, feeders: ['Bodinga 11kV Circuit', 'Silame-Bodinga Tie Line'], currentStatus: 'Normal', lat: 12.8317, lng: 5.1436, temp: 37, weather: 'Clear', humidity: 48, uvIndex: '6 (Moderate)', wind: '15 km/h N' },
+  { id: 'kware', name: 'Kware', type: 'Agricultural & Rural', baselineRisk: 0.58, feeders: ['Kware Feeder 11kV', 'Goronyo Line'], currentStatus: 'Normal', lat: 13.2189, lng: 5.2678, temp: 36, weather: 'Dust Haze', humidity: 35, uvIndex: '5 (Moderate)', wind: '20 km/h NE' },
+  { id: 'gwadabawa', name: 'Gwadabawa', type: 'Border Sector', baselineRisk: 0.60, feeders: ['Gwadabawa 33kV Line', 'Tangaza Tie'], currentStatus: 'Outage Risk', lat: 13.3606, lng: 5.2442, temp: 42, weather: 'Extreme Heat', humidity: 30, uvIndex: '10 (Extreme)', wind: '25 km/h E' },
+  { id: 'tambuwal', name: 'Tambuwal', type: 'Western Hub', baselineRisk: 0.48, feeders: ['Tambuwal Central Feeder', 'Jega-Tambuwal 33kV'], currentStatus: 'Normal', lat: 12.4042, lng: 4.6978, temp: 38, weather: 'Partly Cloudy', humidity: 55, uvIndex: '7 (High)', wind: '14 km/h SW' },
+  { id: 'illela', name: 'Illela', type: 'Border Trade Zone', baselineRisk: 0.65, feeders: ['Illela International Circuit'], currentStatus: 'Outage Risk', lat: 13.7292, lng: 5.2975, temp: 43, weather: 'Severe Dust Storm', humidity: 25, uvIndex: '11 (Extreme)', wind: '28 km/h NE' },
+  { id: 'silame', name: 'Silame', type: 'Riverine Sector', baselineRisk: 0.62, feeders: ['Silame Rural Circuit'], currentStatus: 'Normal', lat: 12.9819, lng: 4.8469, temp: 36, weather: 'Humid Breeze', humidity: 62, uvIndex: '6 (Moderate)', wind: '16 km/h S' },
+];
+
+export const HOURLY_TIMELINE = [
+  { hour: 'Now', temp: 38, weather: 'Sunny', icon: 'sun', riskPct: 34, humidity: 45 },
+  { hour: '1 PM', temp: 39, weather: 'Scattered Clouds', icon: 'cloud-sun', riskPct: 48, humidity: 42 },
+  { hour: '2 PM', temp: 41, weather: 'Thermal Heatwave', icon: 'thermometer-sun', riskPct: 76, humidity: 38 },
+  { hour: '3 PM', temp: 42, weather: 'Thermal Overload', icon: 'zap-off', riskPct: 88, humidity: 35 },
+  { hour: '4 PM', temp: 40, weather: 'Dust Haze', icon: 'wind', riskPct: 62, humidity: 40 },
+  { hour: '5 PM', temp: 38, weather: 'Clear Sky', icon: 'sun', riskPct: 45, humidity: 44 },
+  { hour: '6 PM', temp: 36, weather: 'Clear Evening', icon: 'moon', riskPct: 32, humidity: 50 },
+  { hour: '7 PM', temp: 34, weather: 'Cool Breeze', icon: 'wind', riskPct: 25, humidity: 55 },
+  { hour: '8 PM', temp: 33, weather: 'Night Clear', icon: 'moon', riskPct: 18, humidity: 60 },
+  { hour: '9 PM', temp: 31, weather: 'Night Clear', icon: 'moon', riskPct: 15, humidity: 62 },
+  { hour: '10 PM', temp: 30, weather: 'Night Clear', icon: 'moon', riskPct: 12, humidity: 65 },
+];
+
+export const WIND_ROSE_DATA = [
+  { direction: 'N', speed: 18, frequency: 16 },
+  { direction: 'NE', speed: 29, frequency: 24 },
+  { direction: 'E', speed: 22, frequency: 18 },
+  { direction: 'SE', speed: 10, frequency: 8 },
+  { direction: 'S', speed: 12, frequency: 10 },
+  { direction: 'SW', speed: 15, frequency: 12 },
+  { direction: 'W', speed: 8, frequency: 6 },
+  { direction: 'NW', speed: 14, frequency: 11 },
+];
+
+export const ANALYTICS_TEMP_COMPARISON = [
+  { date: 'Jan 1', historical: 32, current: 35 },
+  { date: 'Jan 5', historical: 31, current: 37 },
+  { date: 'Jan 9', historical: 34, current: 39 },
+  { date: 'Jan 12', historical: 36, current: 41 },
+  { date: 'Jan 15', historical: 38, current: 43 },
+  { date: 'Jan 19', historical: 35, current: 40 },
+  { date: 'Jan 23', historical: 33, current: 38 },
+  { date: 'Jan 27', historical: 36, current: 41 },
+  { date: 'Jan 31', historical: 37, current: 42 },
+];
+
+export const ANALYTICS_PRECIPITATION = [
+  { date: 'Jan 1', mm: 0, gridDeficit: 1200 },
+  { date: 'Jan 5', mm: 2, gridDeficit: 1400 },
+  { date: 'Jan 9', mm: 8, gridDeficit: 1800 },
+  { date: 'Jan 12', mm: 14, gridDeficit: 2200 },
+  { date: 'Jan 15', mm: 19, gridDeficit: 2400 },
+  { date: 'Jan 19', mm: 12, gridDeficit: 1900 },
+  { date: 'Jan 23', mm: 6, gridDeficit: 1600 },
+  { date: 'Jan 27', mm: 16, gridDeficit: 2100 },
+  { date: 'Jan 31', mm: 4, gridDeficit: 1300 },
 ];
 
 export const FEEDERS = [
@@ -70,9 +119,9 @@ export const FEEDER_RELIABILITY_STATS = [
 export const OUTAGE_CAUSES = [
   { name: 'National Grid Load Shedding', percentage: 42, color: '#ef4444' },
   { name: 'Thermal Overload (High Heat)', percentage: 26, color: '#f59e0b' },
-  { name: 'Storm / Rain Damage', percentage: 16, color: '#3b82f6' },
-  { name: 'Equipment Aging & Faults', percentage: 11, color: '#8b5cf6' },
-  { name: 'Vandalism / Maintenance', percentage: 5, color: '#10b981' },
+  { name: 'Storm / Rain Damage', percentage: 16, color: '#0284c7' },
+  { name: 'Equipment Aging & Faults', percentage: 11, color: '#7c3aed' },
+  { name: 'Vandalism / Maintenance', percentage: 5, color: '#059669' },
 ];
 
 export const MODEL_EVALUATION_METRICS = {

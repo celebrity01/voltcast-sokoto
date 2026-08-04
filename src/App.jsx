@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
+import React, { useState } from 'react';
+import SidebarNav from './components/SidebarNav';
+import MainDashboard from './components/MainDashboard';
 import OutagePredictor from './components/OutagePredictor';
 import DistrictHeatmap from './components/DistrictHeatmap';
-import TrendAnalysis from './components/TrendAnalysis';
+import AnalyticsView from './components/AnalyticsView';
 import ModelEvaluation from './components/ModelEvaluation';
 import OutageLogs from './components/OutageLogs';
 import { SOKOTO_DISTRICTS } from './services/mockDataGenerator';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('predictor');
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   // Default prediction state
   const [predictParams, setPredictParams] = useState({
@@ -22,34 +23,7 @@ export default function App() {
     recentMaintenance: false
   });
 
-  // Simulated live sensor values
-  const [liveGridStatus, setLiveGridStatus] = useState({
-    frequency: '50.12',
-    freqStatus: 'Normal',
-    nationalGeneration: '4,150',
-    sokotoLoad: '142',
-    transmissionStatus: 'Operational'
-  });
-
-  // Subtle real-time fluctuation simulation
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const freqNum = (50.0 + (Math.random() * 0.3 - 0.15)).toFixed(2);
-      const genNum = (4100 + Math.floor(Math.random() * 100)).toLocaleString();
-      const loadNum = Math.floor(138 + Math.random() * 10);
-      setLiveGridStatus({
-        frequency: freqNum,
-        freqStatus: freqNum < 49.8 ? 'Warning' : 'Normal',
-        nationalGeneration: genNum,
-        sokotoLoad: loadNum,
-        transmissionStatus: freqNum < 49.8 ? 'Frequency Drag' : 'Operational'
-      });
-    }, 4000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Handler when user selects a district from Heatmap
-  const handleSelectDistrictFromMap = (districtId) => {
+  const handleNavigateToPredictor = (districtId) => {
     const districtObj = SOKOTO_DISTRICTS.find(d => d.id === districtId);
     if (districtObj) {
       setPredictParams(prev => ({
@@ -61,7 +35,6 @@ export default function App() {
     }
   };
 
-  // Handler when user triggers a simulator scenario
   const handleSimulateEvent = (simParams) => {
     setPredictParams(prev => ({
       ...prev,
@@ -71,14 +44,22 @@ export default function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        liveGridStatus={liveGridStatus}
+    <div style={{ display: 'flex', minHeight: '100vh', width: '100vw', overflowX: 'hidden' }}>
+      
+      {/* Left Glass Sidebar Navigation (Matching Image 1 & 2) */}
+      <SidebarNav 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
       />
 
-      <main style={{ flex: 1, maxWidth: '1400px', width: '100%', margin: '0 auto', padding: '1.75rem 1rem' }}>
+      {/* Main Command Center Viewport */}
+      <main style={{ flex: 1, padding: '1.5rem 1.75rem', overflowY: 'auto', minWidth: 0 }}>
+        {activeTab === 'dashboard' && (
+          <MainDashboard 
+            onNavigateToPredictor={handleNavigateToPredictor}
+          />
+        )}
+
         {activeTab === 'predictor' && (
           <OutagePredictor 
             predictParams={predictParams} 
@@ -88,12 +69,12 @@ export default function App() {
 
         {activeTab === 'heatmap' && (
           <DistrictHeatmap 
-            onSelectDistrict={handleSelectDistrictFromMap} 
+            onSelectDistrict={handleNavigateToPredictor} 
           />
         )}
 
         {activeTab === 'trends' && (
-          <TrendAnalysis />
+          <AnalyticsView />
         )}
 
         {activeTab === 'evaluation' && (
@@ -107,9 +88,6 @@ export default function App() {
         )}
       </main>
 
-      <footer style={{ borderTop: '1px solid rgba(255, 255, 255, 0.7)', padding: '1.25rem', textAlign: 'center', fontSize: '0.825rem', color: 'var(--text-muted)', background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(16px)', fontWeight: 500 }}>
-        <p>⚡ VOLTCAST — Sokoto Electricity Outage Predictor | Powered by XGBoost Grid Ensemble & Historical Pattern Analysis</p>
-      </footer>
     </div>
   );
 }
