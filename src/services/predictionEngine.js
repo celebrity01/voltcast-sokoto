@@ -1,82 +1,77 @@
-// Electricity Outage Prediction Engine logic for Sokoto Region
-// Interlinked with real-time uploaded outage datasets via dataSyncEngine.js
+/**
+ * VoltCast Power Outage Prediction Engine
+ * Integrates environmental physics, diurnal load curves, transformer health metrics,
+ * and real-time uploaded dataset records via dataSyncEngine.js
+ */
 
 import { getDynamicDistricts, getDynamicModelMetrics } from './dataSyncEngine';
-import { HOURLY_OUTAGE_TREND } from './mockDataGenerator';
 
 export function calculateOutageProbability(params) {
   const {
     districtId = 'sokoto_north',
-    feederName = '33kV Wamako Trunk Line',
+    feeder = 'Runjin Sambo 11kV',
+    temperature = 38,
+    humidity = 45,
+    windSpeed = 15,
+    transformerLoadPct = 75,
+    nationalGridDeficit = false,
     hour = 14,
-    season = 'Peak Dry Heat',
-    weather = 'Extreme Heat >40°C',
-    gridStatus = 'Scheduled Load Shedding',
-    transformerHealth = 'Fair',
-    recentMaintenance = false
   } = params;
 
-  // 1. Fetch dynamic real-time LGA profile (recalculated from uploaded datasets)
+  // Retrieve LGA profile from real-time dynamic engine
   const districts = getDynamicDistricts();
   const districtObj = districts.find(d => d.id === districtId) || districts[0];
-  let baseRisk = districtObj.baselineRisk;
+  const baseRisk = districtObj.baselineRisk || 0.45;
 
-  // 2. Hour multiplier
-  const hourObj = HOURLY_OUTAGE_TREND.find(h => parseInt(h.hour.split(':')[0], 10) === Math.floor(hour / 2) * 2) || HOURLY_OUTAGE_TREND[6];
-  const hourFactor = hourObj.riskMultiplier;
-
-  // 3. Weather impact score
+  // 1. Thermal & Weather Stress Coefficient
   let weatherFactor = 0;
-  switch (weather) {
-    case 'Extreme Heat >40°C': weatherFactor = 0.28; break;
-    case 'Severe Thunderstorm / Heavy Rain': weatherFactor = 0.25; break;
-    case 'Harmattan Dust Storm': weatherFactor = 0.18; break;
-    case 'High Humidity & Wind': weatherFactor = 0.12; break;
-    default: weatherFactor = 0.02;
-  }
+  if (temperature > 40) weatherFactor += 0.25;
+  else if (temperature > 35) weatherFactor += 0.15;
+  else if (temperature > 30) weatherFactor += 0.05;
 
-  // 4. Grid Deficit Impact
-  let gridFactor = 0;
-  switch (gridStatus) {
-    case 'Critical Generation Deficit (<3000MW)': gridFactor = 0.35; break;
-    case 'Scheduled Load Shedding': gridFactor = 0.28; break;
-    case 'Frequency Fluctuation (49.0 - 49.5 Hz)': gridFactor = 0.18; break;
-    default: gridFactor = 0.03;
-  }
+  if (humidity < 20) weatherFactor += 0.08; // Extreme dry heat / Harmattan dust
+  if (windSpeed > 35) weatherFactor += 0.12; // Storm conductor snap risk
 
-  // 5. Transformer / Infrastructure factor
+  // 2. Substation Transformer Stress Coefficient
   let infraFactor = 0;
-  if (transformerHealth === 'Poor / Overloaded') infraFactor += 0.18;
-  else if (transformerHealth === 'Fair') infraFactor += 0.08;
-  if (recentMaintenance) infraFactor -= 0.10;
+  if (transformerLoadPct > 85) infraFactor += 0.30;
+  else if (transformerLoadPct > 70) infraFactor += 0.15;
+  else infraFactor += 0.05;
 
-  // 6. Season Factor
-  let seasonFactor = 0;
-  if (season === 'Peak Dry Heat') seasonFactor = 0.12;
-  else if (season === 'Peak Rainy') seasonFactor = 0.10;
-  else if (season === 'Harmattan') seasonFactor = 0.05;
+  // 3. National Grid Generation Deficit Penalty
+  let gridFactor = nationalGridDeficit ? 0.25 : 0.05;
 
-  let totalScore = (baseRisk * 0.30) + (hourFactor * 0.15) + weatherFactor + gridFactor + infraFactor + seasonFactor;
-  const probabilityPct = Math.min(98, Math.max(5, Math.round(totalScore * 100)));
+  // 4. Diurnal Peak Load Hours Coefficient (13:00 - 18:00 peak heat load)
+  let hourFactor = 0;
+  if (hour >= 13 && hour <= 18) hourFactor = 0.18;
+  else if (hour >= 19 && hour <= 22) hourFactor = 0.12;
+  else hourFactor = 0.04;
 
-  let riskLevel = 'Low Risk';
-  let badgeColor = 'emerald';
+  // Calculate Weighted Aggregate Risk Probability
+  let rawScore = baseRisk * 0.35 + weatherFactor + infraFactor + gridFactor + hourFactor;
+  let probability = Math.min(Math.max(rawScore, 0.08), 0.96);
+  const probabilityPct = Math.round(probability * 100);
+
+  // Risk Classification Levels & Colors
+  let riskLevel = 'Low';
+  let badgeColor = 'badge-emerald';
+
   if (probabilityPct >= 75) {
-    riskLevel = 'Severe Critical';
-    badgeColor = 'crimson';
-  } else if (probabilityPct >= 50) {
-    riskLevel = 'High Risk';
-    badgeColor = 'amber';
-  } else if (probabilityPct >= 30) {
-    riskLevel = 'Moderate Risk';
-    badgeColor = 'cyan';
+    riskLevel = 'Critical';
+    badgeColor = 'badge-crimson';
+  } else if (probabilityPct >= 55) {
+    riskLevel = 'High';
+    badgeColor = 'badge-crimson';
+  } else if (probabilityPct >= 35) {
+    riskLevel = 'Moderate';
+    badgeColor = 'badge-amber';
   }
 
-  let estDurationHours = (probabilityPct / 20) + (weatherFactor * 2) + (gridFactor * 3);
-  estDurationHours = Math.round(estDurationHours * 10) / 10;
+  // Estimated Duration & Peak Window
+  const estDurationHours = probabilityPct > 70 ? 4.5 : (probabilityPct > 45 ? 2.5 : 1.0);
+  const peakStart = Math.max(hour - 1, 0);
+  const peakEnd = Math.min(hour + 3, 23);
 
-  const peakStart = (hour + 1) % 24;
-  const peakEnd = (hour + Math.round(estDurationHours)) % 24;
   const formatTime = (h) => `${h < 10 ? '0' + h : h}:00`;
 
   const sumVal = (gridFactor + 0.05) + (weatherFactor + 0.05) + (hourFactor * 0.1) + (infraFactor + 0.05);
@@ -84,6 +79,13 @@ export function calculateOutageProbability(params) {
   const factorWeatherPct = Math.round(((weatherFactor + 0.05) / sumVal) * 100);
   const factorTemporalPct = Math.round(((hourFactor * 0.1) / sumVal) * 100);
   const factorInfraPct = 100 - (factorGridPct + factorWeatherPct + factorTemporalPct);
+
+  const contributingFactors = [
+    { name: 'Grid Supply & Generation Deficit', pct: factorGridPct, color: 'var(--liquid-cyan)' },
+    { name: 'Ambient Weather & Thermal Surge', pct: factorWeatherPct, color: 'var(--liquid-amber)' },
+    { name: 'Diurnal Peak Load Hours', pct: factorTemporalPct, color: 'var(--liquid-violet)' },
+    { name: 'Transformer & Infrastructure Health', pct: factorInfraPct, color: '#be123c' },
+  ];
 
   const recommendations = {
     residential: probabilityPct > 55 
@@ -109,6 +111,7 @@ export function calculateOutageProbability(params) {
       temporal: factorTemporalPct,
       infra: factorInfraPct
     },
+    contributingFactors,
     recommendations,
     districtName: districtObj.name,
     baselineRiskUsed: Math.round(baseRisk * 100),
