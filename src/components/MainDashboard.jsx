@@ -1,19 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import GoogleMapView from './GoogleMapView';
 import HourlyForecastTimeline from './HourlyForecastTimeline';
-import { SOKOTO_DISTRICTS } from '../services/mockDataGenerator';
+import { getDynamicDistricts, subscribeDataChanges, getAllLogs } from '../services/dataSyncEngine';
 import { 
-  Sun, Droplets, Wind, Zap, ShieldAlert, Activity, Gauge, Navigation, Thermometer, Radio, CheckCircle2, AlertTriangle, ArrowUpRight 
+  Sun, Droplets, Wind, Zap, ShieldAlert, Activity, Thermometer, Radio, ArrowUpRight, Database 
 } from 'lucide-react';
 
 export default function MainDashboard({ onNavigateToPredictor }) {
+  const [districts, setDistricts] = useState(getDynamicDistricts);
+  const [totalLogsCount, setTotalLogsCount] = useState(() => getAllLogs().length);
   const [selectedDistrictId, setSelectedDistrictId] = useState('sokoto_north');
   const [selectedHour, setSelectedHour] = useState(14);
 
-  const selectedDistrict = SOKOTO_DISTRICTS.find(d => d.id === selectedDistrictId) || SOKOTO_DISTRICTS[0];
+  useEffect(() => {
+    const unsubscribe = subscribeDataChanges(() => {
+      setDistricts(getDynamicDistricts());
+      setTotalLogsCount(getAllLogs().length);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const selectedDistrict = districts.find(d => d.id === selectedDistrictId) || districts[0];
   const riskPct = Math.round(selectedDistrict.baselineRisk * 100);
 
-  // Feeder status list for Sokoto region
+  // Substation feeder status list
   const feederStatuses = [
     { name: 'Runjin Sambo 11kV', status: 'ONLINE', load: '64%', risk: 'Low' },
     { name: 'Guiwa 33kV Line', status: 'HIGH TEMP', load: '89%', risk: 'High' },
@@ -45,21 +55,23 @@ export default function MainDashboard({ onNavigateToPredictor }) {
                 VoltCast Regional Command Center
               </h2>
               <span className="badge badge-emerald">
-                <Radio size={12} className="animate-pulse" /> Live Telemetry
+                <Radio size={12} className="animate-pulse" /> Live Telemetry Synced
               </span>
             </div>
             <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', fontWeight: 500, marginTop: '0.15rem' }}>
-              Sokoto Regional Grid Stability Monitor • Real-time Thermal Stress & Diurnal Outage Risk
+              Sokoto State Grid stability monitor • <b>{totalLogsCount} Verified Outage Incident Records Active</b>
             </p>
           </div>
         </div>
 
         {/* Action Button & Grid Health Metric */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-          <div style={{ textAlign: 'right', display: 'none', mdDisplay: 'block' }}>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 700 }}>GRID SYSTEM FREQUENCY</div>
-            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.15rem', fontWeight: 800, color: '#059669' }}>
-              50.02 Hz <span style={{ fontSize: '0.725rem', fontWeight: 600, color: 'var(--text-muted)' }}>(Nominal)</span>
+          <div style={{ textAlign: 'right' }}>
+            <div style={{ fontSize: '0.725rem', color: 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem', justifyContent: 'flex-end' }}>
+              <Database size={12} color="var(--liquid-cyan)" /> UPLOADED DATASET SYNCED
+            </div>
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.05rem', fontWeight: 800, color: '#0058be' }}>
+              {totalLogsCount} Outage Logs Interlinked
             </div>
           </div>
 
@@ -74,12 +86,12 @@ export default function MainDashboard({ onNavigateToPredictor }) {
 
       </div>
 
-      {/* 2. Interactive Sokoto LGA Selection Pills Bar */}
+      {/* 2. Interactive Sokoto LGA Selection Pills Bar (Real-Time Dynamic Risks) */}
       <div className="glass-card" style={{ padding: '0.75rem 1rem', display: 'flex', alignItems: 'center', gap: '0.6rem', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <span style={{ fontSize: '0.785rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap', paddingRight: '0.4rem' }}>
           Select Region:
         </span>
-        {SOKOTO_DISTRICTS.map((district) => {
+        {districts.map((district) => {
           const isSelected = district.id === selectedDistrictId;
           const dRisk = Math.round(district.baselineRisk * 100);
           return (
@@ -123,7 +135,7 @@ export default function MainDashboard({ onNavigateToPredictor }) {
       {/* 3. Main Dashboard Body: Expansive GIS Map (Left 8 Cols) + Live Weather Side Panel (Right 4 Cols) */}
       <div className="main-dashboard-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '1.25rem', minHeight: '460px' }}>
         
-        {/* Expansive Interactive Map Container (8 Cols on Desktop) */}
+        {/* Expansive Interactive Map Container */}
         <div className="map-container-col" style={{ gridColumn: 'span 8', minHeight: '460px', display: 'flex', flexDirection: 'column' }}>
           <GoogleMapView 
             selectedDistrictId={selectedDistrictId}
@@ -131,7 +143,7 @@ export default function MainDashboard({ onNavigateToPredictor }) {
           />
         </div>
 
-        {/* Current Weather & Grid Status Side Panel (4 Cols on Desktop) */}
+        {/* Current Weather & Grid Status Side Panel */}
         <div className="glass-card side-panel-col" style={{ gridColumn: 'span 4', padding: '1.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           
           <div>
@@ -146,7 +158,7 @@ export default function MainDashboard({ onNavigateToPredictor }) {
                 </div>
               </div>
               <span className={`badge ${riskPct > 55 ? 'badge-crimson' : 'badge-cyan'}`}>
-                {selectedDistrict.type}
+                {selectedDistrict.currentStatus || 'Normal'}
               </span>
             </div>
 
@@ -189,7 +201,7 @@ export default function MainDashboard({ onNavigateToPredictor }) {
                   <Sun size={15} color="var(--liquid-amber)" /> UV Index
                 </div>
                 <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', marginTop: '0.2rem' }}>
-                  {selectedDistrict.uvIndex} <span style={{ fontSize: '0.7rem', color: 'var(--liquid-amber)', fontWeight: 700 }}>(High)</span>
+                  {selectedDistrict.uvIndex}
                 </div>
               </div>
 
@@ -204,17 +216,17 @@ export default function MainDashboard({ onNavigateToPredictor }) {
 
               <div style={{ background: 'rgba(255, 255, 255, 0.8)', padding: '0.75rem 0.85rem', borderRadius: '14px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--text-muted)', fontSize: '0.75rem', fontWeight: 600 }}>
-                  <Activity size={15} color="var(--liquid-violet)" /> Thermal Stress
+                  <Activity size={15} color="var(--liquid-violet)" /> Total Incidents
                 </div>
                 <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-main)', marginTop: '0.2rem' }}>
-                  {selectedDistrict.temp > 38 ? 'High' : 'Moderate'}
+                  {selectedDistrict.totalIncidents || 0} Reported
                 </div>
               </div>
 
             </div>
           </div>
 
-          {/* Liquid Probability Outage Banner */}
+          {/* Dynamic Probability Outage Banner */}
           <div style={{ 
             marginTop: '1.25rem', 
             padding: '1rem', 
@@ -226,7 +238,7 @@ export default function MainDashboard({ onNavigateToPredictor }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
                 <div style={{ fontSize: '0.725rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  PREDICTED OUTAGE LIKELIHOOD
+                  DATASET CALIBRATED RISK
                 </div>
                 <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: 800, color: riskPct > 55 ? '#be123c' : '#0058be', marginTop: '0.1rem' }}>
                   {riskPct}% ({riskPct > 55 ? 'HIGH RISK' : 'MODERATE'})

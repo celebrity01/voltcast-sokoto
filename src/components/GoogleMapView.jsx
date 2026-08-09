@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { SOKOTO_DISTRICTS } from '../services/mockDataGenerator';
-import { Search, MapPin, CloudRain, Zap, Radio, Layers, Activity, Compass, Flame } from 'lucide-react';
+import { getDynamicDistricts, subscribeDataChanges } from '../services/dataSyncEngine';
+import { Search, MapPin, CloudRain, Zap, Radio, Layers, Activity, Flame } from 'lucide-react';
 
 const DARK_CYAN_MAP_STYLE = [
   { elementType: "geometry", stylers: [{ color: "#081321" }] },
@@ -18,9 +18,17 @@ const DARK_CYAN_MAP_STYLE = [
 
 export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) {
   const mapRef = useRef(null);
+  const [districts, setDistricts] = useState(getDynamicDistricts);
   const [mapLoaded, setMapLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeLayer, setActiveLayer] = useState('feeders'); // 'feeders', 'heatmap', 'topography'
+  const [activeLayer, setActiveLayer] = useState('feeders');
+
+  useEffect(() => {
+    const unsubscribe = subscribeDataChanges(() => {
+      setDistricts(getDynamicDistricts());
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
@@ -38,7 +46,7 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
       if (!isMounted || !mapRef.current || !window.google || !window.google.maps) return;
       try {
         const map = new window.google.maps.Map(mapRef.current, {
-          center: { lat: 13.0622, lng: 5.2339 }, // Sokoto, Nigeria
+          center: { lat: 13.0622, lng: 5.2339 },
           zoom: 11,
           styles: DARK_CYAN_MAP_STYLE,
           disableDefaultUI: true,
@@ -47,7 +55,7 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
 
         setMapLoaded(true);
 
-        SOKOTO_DISTRICTS.forEach((district) => {
+        districts.forEach((district) => {
           const marker = new window.google.maps.Marker({
             position: { lat: district.lat, lng: district.lng },
             map: map,
@@ -58,8 +66,8 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
             content: `
               <div style="color: #0f172a; padding: 6px; font-family: sans-serif;">
                 <strong style="font-size: 14px; color: #0058be;">${district.name}</strong><br/>
-                <span style="font-size: 12px;">Temperature: <b>${district.temp}°C</b> (${district.weather})</span><br/>
-                <span style="font-size: 12px;">Outage Risk: <b style="color: ${district.baselineRisk > 0.5 ? '#da3437' : '#059669'}">${Math.round(district.baselineRisk * 100)}%</b></span>
+                <span style="font-size: 12px;">Temp: <b>${district.temp}°C</b> (${district.weather})</span><br/>
+                <span style="font-size: 12px;">Calibrated Outage Risk: <b style="color: ${district.baselineRisk > 0.5 ? '#da3437' : '#059669'}">${Math.round(district.baselineRisk * 100)}%</b></span>
               </div>
             `
           });
@@ -97,9 +105,9 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
     return () => {
       isMounted = false;
     };
-  }, [onSelectDistrict]);
+  }, [onSelectDistrict, districts]);
 
-  const filteredDistricts = SOKOTO_DISTRICTS.filter(d => 
+  const filteredDistricts = districts.filter(d => 
     d.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     d.type.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -231,7 +239,6 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#cyber-grid)" />
-            {/* Glowing Inter-District Feeder Grid Lines */}
             <path d="M 100 120 Q 250 80 400 130 T 700 120" fill="none" stroke="#06b6d4" strokeWidth="2" strokeDasharray="6 4" />
             <path d="M 120 280 Q 300 240 500 290 T 800 280" fill="none" stroke="#0058be" strokeWidth="2" strokeDasharray="8 4" />
           </svg>
@@ -308,7 +315,7 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
                   {/* Outage Risk Badge & Feeder */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.4rem', borderTop: '1px solid rgba(255,255,255,0.1)' }}>
                     <span style={{ fontSize: '0.675rem', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>
-                      {district.feeders[0] || '11kV Feeder'}
+                      {district.totalIncidents || 0} Incidents
                     </span>
                     <span style={{
                       background: isHighRisk ? 'rgba(218, 52, 55, 0.25)' : 'rgba(16, 185, 129, 0.25)',
@@ -346,7 +353,7 @@ export default function GoogleMapView({ selectedDistrictId, onSelectDistrict }) 
               <span>Sokoto Regional GIS Grid • Centered 13.0622° N, 5.2339° E</span>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: '#38bdf8', fontWeight: 700 }}>
-              <Activity size={14} /> 10 LGAs Monitored Live
+              <Activity size={14} /> {districts.length} LGAs Synced Live
             </div>
           </div>
 

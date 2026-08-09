@@ -1,7 +1,9 @@
 /**
  * OpenRouter AI Agent Service for VoltCast Sokoto
- * Connects securely to OpenRouter API (openrouter/free)
+ * Interlinked with uploaded outage datasets via dataSyncEngine.js
  */
+
+import { getUploadedAiContext } from './dataSyncEngine';
 
 export function getOpenRouterKey() {
   return localStorage.getItem('voltcast_openrouter_key') || 
@@ -22,12 +24,13 @@ export function setOpenRouterKey(key) {
  */
 export async function queryOpenRouterAI(messages, options = {}) {
   const apiKey = getOpenRouterKey();
-  const model = options.model || 'openrouter/auto'; // Automatically routes to free model tier
+  const model = options.model || 'openrouter/auto';
+  const dynamicAiContext = getUploadedAiContext();
 
   if (!apiKey) {
     return {
       success: false,
-      error: 'OpenRouter API Key missing. Please click "Config API Key" to enter your OpenRouter Key.'
+      error: 'OpenRouter API Key missing. Please click "Key Config" to enter your OpenRouter Key.'
     };
   }
 
@@ -36,12 +39,14 @@ export async function queryOpenRouterAI(messages, options = {}) {
     content: `You are VoltCast AI, an autonomous AI Grid Controller and Power Outage Prediction Specialist for Sokoto State, Nigeria.
 Your mission is to provide accurate, real-time power outage risk assessments, thermal stress diagnostics, feeder load analysis, and grid management recommendations for Sokoto LGAs (Sokoto North, Sokoto South, Wamako, Dange Shuni, Bodinga, Kware, Gwadabawa, Tambuwal, Illela, Silame).
 
+${dynamicAiContext}
+
 Context Data:
 - Regional Base Temperature: 38°C to 44°C during peak dry heat.
 - Primary Feeders: Runjin Sambo 11kV, Guiwa 33kV Line, Sultan Palace 11kV, Giginya 33kV Trunk.
 - Failure Drivers: Thermal transformer overload, scheduled load shedding, Harmattan dust faults, conductor snaps.
 
-Always provide concise, professional, actionable, and data-backed grid advisories.`
+Always provide concise, professional, actionable, and data-backed grid advisories based on the real uploaded dataset.`
   };
 
   const fullMessages = [systemInstruction, ...messages];

@@ -1,15 +1,17 @@
 import React, { useState, useRef } from 'react';
+import { addUploadedData, resetUploadedData, getAllLogs } from '../services/dataSyncEngine';
 import { 
-  UploadCloud, FileSpreadsheet, CheckCircle2, AlertCircle, Download, FileText, PlusCircle, RefreshCw, Database, Layers, ArrowRight, ShieldCheck 
+  UploadCloud, FileSpreadsheet, CheckCircle2, AlertCircle, Download, FileText, PlusCircle, RefreshCw, ShieldCheck, Database, Trash2 
 } from 'lucide-react';
 import { SOKOTO_DISTRICTS } from '../services/mockDataGenerator';
 
 export default function DataUploader({ onDataUploaded, onAddManualLog }) {
-  const [activeTab, setActiveTab] = useState('file'); // 'file' or 'manual'
+  const [activeTab, setActiveTab] = useState('file');
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFile, setUploadedFile] = useState(null);
   const [parsedData, setParsedData] = useState(null);
-  const [uploadStatus, setUploadStatus] = useState(null); // { type: 'success' | 'error', message: string }
+  const [uploadStatus, setUploadStatus] = useState(null);
+  const [totalLogsCount, setTotalLogsCount] = useState(() => getAllLogs().length);
   const fileInputRef = useRef(null);
 
   // Manual Report Form State
@@ -24,7 +26,6 @@ export default function DataUploader({ onDataUploaded, onAddManualLog }) {
     impactLevel: 'Medium'
   });
 
-  // Handle Drag Events
   const handleDrag = (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -35,7 +36,6 @@ export default function DataUploader({ onDataUploaded, onAddManualLog }) {
     }
   };
 
-  // Parse CSV / JSON File
   const processFile = (file) => {
     if (!file) return;
 
@@ -59,7 +59,6 @@ export default function DataUploader({ onDataUploaded, onAddManualLog }) {
         if (fileExt === 'json') {
           records = JSON.parse(text);
         } else {
-          // Parse CSV
           const lines = text.split('\n').map(l => l.trim()).filter(l => l);
           if (lines.length < 2) {
             throw new Error('CSV file must contain a header row and at least one data row.');
@@ -79,7 +78,7 @@ export default function DataUploader({ onDataUploaded, onAddManualLog }) {
         setParsedData(records);
         setUploadStatus({
           type: 'success',
-          message: `Successfully validated ${records.length} outage incident records from "${file.name}".`
+          message: `Successfully validated ${records.length} outage incident records from "${file.name}". Click "Import Records into Engine" to trigger real-time calibration.`
         });
       } catch (err) {
         console.error(err);
@@ -108,7 +107,6 @@ export default function DataUploader({ onDataUploaded, onAddManualLog }) {
     }
   };
 
-  // Download Sample Template CSV
   const downloadSampleCSV = () => {
     const csvContent = `District,Feeder Line,Date,Time,Duration (hrs),Root Cause,Impact Level,Status
 Sokoto North,Runjin Sambo 11kV,2026-08-01,14:30,2.5,Extreme Ambient Heat >40°C,High,Resolved
@@ -127,18 +125,31 @@ Bodinga,Bodinga Rural Feeder,2026-08-05,13:20,5.0,Line Conductor Snap,High,Resol
     document.body.removeChild(link);
   };
 
-  // Commit Uploaded Records to App Data State
+  // Commit Uploaded Records to Real-time Data Sync Engine
   const handleConfirmImport = () => {
     if (!parsedData || parsedData.length === 0) return;
-    if (onDataUploaded) {
-      onDataUploaded(parsedData);
-    }
+    
+    // Trigger real-time data sync across all modules!
+    addUploadedData(parsedData);
+    if (onDataUploaded) onDataUploaded(parsedData);
+
     setUploadStatus({
       type: 'success',
-      message: `🎉 Imported ${parsedData.length} records into the VoltCast Sokoto regional engine!`
+      message: `🎉 Real-time Ingestion Complete! ${parsedData.length} records interlinked into Sokoto GIS Map, Predictor, ML Evaluation, and OpenRouter AI Copilot.`
     });
+
+    setTotalLogsCount(getAllLogs().length);
     setParsedData(null);
     setUploadedFile(null);
+  };
+
+  const handleResetData = () => {
+    resetUploadedData();
+    setTotalLogsCount(getAllLogs().length);
+    setUploadStatus({
+      type: 'success',
+      message: 'Reset custom dataset. Restored base Sokoto telemetry state.'
+    });
   };
 
   // Submit Manual Single Outage Incident Report
@@ -156,16 +167,16 @@ Bodinga,Bodinga Rural Feeder,2026-08-05,13:20,5.0,Line Conductor Snap,High,Resol
       impact: manualForm.impactLevel
     };
 
-    if (onAddManualLog) {
-      onAddManualLog(newIncident);
-    }
+    // Commit to real-time engine!
+    addUploadedData(newIncident);
+    if (onAddManualLog) onAddManualLog(newIncident);
 
     setUploadStatus({
       type: 'success',
-      message: `✅ Successfully reported manual outage incident ${newIncident.id} for ${manualForm.district}!`
+      message: `✅ Incident ${newIncident.id} logged! Interlinked in real-time with Google Map & OpenRouter AI.`
     });
 
-    // Reset Form
+    setTotalLogsCount(getAllLogs().length);
     setManualForm({
       district: 'Sokoto North',
       feeder: 'Runjin Sambo 11kV',
@@ -196,39 +207,53 @@ Bodinga,Bodinga Rural Feeder,2026-08-05,13:20,5.0,Line Conductor Snap,High,Resol
             <UploadCloud size={24} color="#ffffff" />
           </div>
           <div>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-main)' }}>
-              Outage Data Ingestion & Reporting
-            </h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.3rem', fontWeight: 800, color: 'var(--text-main)' }}>
+                Real-Time Data Ingestion & Model Calibration
+              </h2>
+              <span className="badge badge-emerald">
+                <Database size={12} /> {totalLogsCount} Records Active
+              </span>
+            </div>
             <p style={{ fontSize: '0.825rem', color: 'var(--text-muted)', fontWeight: 500, marginTop: '0.15rem' }}>
-              Upload historical CSV/JSON dataset files or log manual grid incident reports to enhance prediction accuracy.
+              Upload historical CSV/JSON dataset files or log manual grid incidents to instantly update Map risk scores, ML metrics, and AI Copilot.
             </p>
           </div>
         </div>
 
-        <button 
-          className="btn-secondary"
-          style={{ fontSize: '0.825rem', padding: '0.55rem 1rem' }}
-          onClick={downloadSampleCSV}
-        >
-          <Download size={15} /> Download CSV Template
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <button 
+            className="btn-secondary"
+            style={{ fontSize: '0.825rem', padding: '0.55rem 1rem' }}
+            onClick={downloadSampleCSV}
+          >
+            <Download size={15} /> Download CSV Template
+          </button>
+          <button 
+            className="btn-secondary"
+            style={{ fontSize: '0.825rem', padding: '0.55rem 1rem', color: '#be123c', border: '1px solid rgba(218, 52, 55, 0.3)' }}
+            onClick={handleResetData}
+          >
+            <Trash2 size={15} /> Reset Data
+          </button>
+        </div>
       </div>
 
-      {/* Mode Selector Tabs (Batch File Upload vs Manual Incident Report) */}
+      {/* Mode Selector Tabs */}
       <div style={{ display: 'flex', gap: '0.75rem' }}>
         <button
           onClick={() => setActiveTab('file')}
           className={`nav-tab ${activeTab === 'file' ? 'active' : ''}`}
           style={{ padding: '0.65rem 1.25rem' }}
         >
-          <FileSpreadsheet size={18} /> Batch File Ingestion (CSV / JSON)
+          <FileSpreadsheet size={18} /> Batch Dataset Upload (CSV / JSON)
         </button>
         <button
           onClick={() => setActiveTab('manual')}
           className={`nav-tab ${activeTab === 'manual' ? 'active' : ''}`}
           style={{ padding: '0.65rem 1.25rem' }}
         >
-          <PlusCircle size={18} /> Log Single Incident Report
+          <PlusCircle size={18} /> Log Single Field Incident
         </button>
       </div>
 
@@ -320,7 +345,7 @@ Bodinga,Bodinga Rural Feeder,2026-08-05,13:20,5.0,Line Conductor Snap,High,Resol
                       Parsed Dataset Preview
                     </h3>
                   </div>
-                  <span className="badge badge-cyan">{parsedData.length} Incidents</span>
+                  <span className="badge badge-cyan">{parsedData.length} Incidents Validated</span>
                 </div>
 
                 {/* Sample Records Table */}
@@ -354,14 +379,14 @@ Bodinga,Bodinga Rural Feeder,2026-08-05,13:20,5.0,Line Conductor Snap,High,Resol
                   style={{ flex: 1, fontSize: '0.85rem' }}
                   onClick={handleConfirmImport}
                 >
-                  <ShieldCheck size={16} /> Import Records into Engine
+                  <ShieldCheck size={16} /> Import & Calibrate System Live
                 </button>
                 <button 
                   className="btn-secondary"
                   style={{ fontSize: '0.85rem' }}
                   onClick={() => { setParsedData(null); setUploadedFile(null); setUploadStatus(null); }}
                 >
-                  Clear
+                  Cancel
                 </button>
               </div>
             </div>
@@ -485,7 +510,7 @@ Bodinga,Bodinga Rural Feeder,2026-08-05,13:20,5.0,Line Conductor Snap,High,Resol
             {/* Submit Button */}
             <div style={{ gridColumn: '1 / -1', marginTop: '0.75rem', display: 'flex', justifyContent: 'flex-end' }}>
               <button className="btn-primary" type="submit" style={{ fontSize: '0.9rem', padding: '0.7rem 1.75rem' }}>
-                <PlusCircle size={18} /> Submit Incident Field Report
+                <PlusCircle size={18} /> Submit & Sync Live
               </button>
             </div>
 

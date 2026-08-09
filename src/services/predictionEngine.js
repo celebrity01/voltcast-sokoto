@@ -1,6 +1,8 @@
 // Electricity Outage Prediction Engine logic for Sokoto Region
+// Interlinked with real-time uploaded outage datasets via dataSyncEngine.js
 
-import { SOKOTO_DISTRICTS, HOURLY_OUTAGE_TREND } from './mockDataGenerator';
+import { getDynamicDistricts, getDynamicModelMetrics } from './dataSyncEngine';
+import { HOURLY_OUTAGE_TREND } from './mockDataGenerator';
 
 export function calculateOutageProbability(params) {
   const {
@@ -14,8 +16,9 @@ export function calculateOutageProbability(params) {
     recentMaintenance = false
   } = params;
 
-  // 1. Base risk from District
-  const districtObj = SOKOTO_DISTRICTS.find(d => d.id === districtId) || SOKOTO_DISTRICTS[0];
+  // 1. Fetch dynamic real-time LGA profile (recalculated from uploaded datasets)
+  const districts = getDynamicDistricts();
+  const districtObj = districts.find(d => d.id === districtId) || districts[0];
   let baseRisk = districtObj.baselineRisk;
 
   // 2. Hour multiplier
@@ -53,7 +56,7 @@ export function calculateOutageProbability(params) {
   else if (season === 'Peak Rainy') seasonFactor = 0.10;
   else if (season === 'Harmattan') seasonFactor = 0.05;
 
-  let totalScore = (baseRisk * 0.25) + (hourFactor * 0.15) + weatherFactor + gridFactor + infraFactor + seasonFactor;
+  let totalScore = (baseRisk * 0.30) + (hourFactor * 0.15) + weatherFactor + gridFactor + infraFactor + seasonFactor;
   const probabilityPct = Math.min(98, Math.max(5, Math.round(totalScore * 100)));
 
   let riskLevel = 'Low Risk';
@@ -98,42 +101,21 @@ export function calculateOutageProbability(params) {
     probabilityPct,
     riskLevel,
     badgeColor,
-    districtName: districtObj.name,
-    estDurationHours: `${estDurationHours} hours`,
+    estDurationHours,
     peakWindow: `${formatTime(peakStart)} - ${formatTime(peakEnd)}`,
-    confidenceInterval: '93.4% Confidence',
-    contributingFactors: [
-      { name: 'National Grid Load Shedding', pct: factorGridPct, color: '#ef4444' },
-      { name: 'Weather & Thermal Stress', pct: factorWeatherPct, color: '#f59e0b' },
-      { name: 'Time-of-Day Peak Load', pct: factorTemporalPct, color: '#0284c7' },
-      { name: 'Feeder & Transformer Health', pct: factorInfraPct, color: '#7c3aed' },
-    ],
+    factors: {
+      grid: factorGridPct,
+      weather: factorWeatherPct,
+      temporal: factorTemporalPct,
+      infra: factorInfraPct
+    },
     recommendations,
-    rawInputs: params
+    districtName: districtObj.name,
+    baselineRiskUsed: Math.round(baseRisk * 100),
+    totalIncidentsRecorded: districtObj.totalIncidents || 0
   };
 }
 
-// Recalculates confusion matrix and evaluation metrics based on user threshold adjustment
-export function recalculateThresholdMetrics(threshold = 0.50) {
-  // Base numbers at 0.50 threshold: TP=840, FP=107, FN=61, TN=792 (Total = 1800)
-  const totalPositives = 901; // TP + FN
-  const totalNegatives = 899; // TN + FP
-
-  // Shift TP/FP/FN/TN according to threshold
-  const shift = (0.50 - threshold);
-  let tp = Math.min(totalPositives, Math.max(100, Math.round(840 + shift * 400)));
-  let fn = totalPositives - tp;
-  let fp = Math.min(totalNegatives, Math.max(20, Math.round(107 + shift * 500)));
-  let tn = totalNegatives - fp;
-
-  const accuracy = (tp + tn) / (tp + tn + fp + fn);
-  const precision = tp / (tp + fp || 1);
-  const recall = tp / (tp + fn || 1);
-  const f1Score = (2 * precision * recall) / (precision + recall || 1);
-
-  return {
-    threshold,
-    tp, fp, fn, tn,
-    accuracy, precision, recall, f1Score
-  };
+export function recalculateThresholdMetrics(threshold) {
+  return getDynamicModelMetrics(threshold);
 }
