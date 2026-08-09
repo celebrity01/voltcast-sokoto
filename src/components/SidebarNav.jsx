@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Zap, LayoutDashboard, MapPin, BarChart3, TestTube2, History, Settings, UploadCloud 
+  Zap, LayoutDashboard, MapPin, BarChart3, TestTube2, History, Settings, UploadCloud, Bot, Sparkles 
 } from 'lucide-react';
 
 export default function SidebarNav({ activeTab, setActiveTab }) {
@@ -12,6 +12,7 @@ export default function SidebarNav({ activeTab, setActiveTab }) {
     { id: 'evaluation', label: 'Model Evaluation', icon: TestTube2 },
     { id: 'logs', label: 'Alerts & Logs', icon: History },
     { id: 'upload', label: 'Upload Data', icon: UploadCloud },
+    { id: 'ai', label: 'AI Copilot', icon: Bot, isSpecial: true },
   ];
 
   return (
@@ -65,9 +66,11 @@ export default function SidebarNav({ activeTab, setActiveTab }) {
                 key={item.id}
                 onClick={() => setActiveTab(item.id)}
                 style={{
-                  background: isActive ? 'linear-gradient(135deg, rgba(0, 88, 190, 0.15), rgba(124, 58, 237, 0.1))' : 'transparent',
-                  border: `1px solid ${isActive ? 'rgba(0, 88, 190, 0.45)' : 'transparent'}`,
-                  color: isActive ? '#0058be' : 'var(--text-muted)',
+                  background: isActive 
+                    ? (item.isSpecial ? 'linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(0, 88, 190, 0.15))' : 'linear-gradient(135deg, rgba(0, 88, 190, 0.15), rgba(124, 58, 237, 0.1))')
+                    : 'transparent',
+                  border: `1px solid ${isActive ? (item.isSpecial ? 'rgba(124, 58, 237, 0.55)' : 'rgba(0, 88, 190, 0.45)') : 'transparent'}`,
+                  color: isActive ? (item.isSpecial ? '#7c3aed' : '#0058be') : 'var(--text-muted)',
                   fontFamily: 'var(--font-heading)',
                   fontWeight: isActive ? 800 : 600,
                   fontSize: '0.875rem',
@@ -82,8 +85,13 @@ export default function SidebarNav({ activeTab, setActiveTab }) {
                   boxShadow: isActive ? '0 4px 15px rgba(0, 88, 190, 0.12)' : 'none'
                 }}
               >
-                <Icon size={18} color={isActive ? '#0058be' : 'var(--text-muted)'} />
-                {item.label}
+                <Icon size={18} color={isActive ? (item.isSpecial ? '#7c3aed' : '#0058be') : 'var(--text-muted)'} />
+                <span>{item.label}</span>
+                {item.isSpecial && (
+                  <span style={{ marginLeft: 'auto', background: 'rgba(124, 58, 237, 0.15)', color: '#7c3aed', padding: '0.15rem 0.4rem', borderRadius: '9999px', fontSize: '0.65rem', fontWeight: 800 }}>
+                    AI
+                  </span>
+                )}
               </button>
             );
           })}

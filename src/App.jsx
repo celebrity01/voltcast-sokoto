@@ -7,8 +7,9 @@ import AnalyticsView from './components/AnalyticsView';
 import ModelEvaluation from './components/ModelEvaluation';
 import OutageLogs from './components/OutageLogs';
 import DataUploader from './components/DataUploader';
+import AiAssistant from './components/AiAssistant';
 import { SOKOTO_DISTRICTS } from './services/mockDataGenerator';
-import { LayoutDashboard, Zap, MapPin, BarChart3, TestTube2, History, UploadCloud } from 'lucide-react';
+import { LayoutDashboard, Zap, MapPin, BarChart3, TestTube2, History, UploadCloud, Bot } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
@@ -59,7 +60,7 @@ export default function App() {
   const mobileNavItems = [
     { id: 'dashboard', label: 'Command', icon: LayoutDashboard },
     { id: 'predictor', label: 'Predictor', icon: Zap },
-    { id: 'heatmap', label: 'Heatmap', icon: MapPin },
+    { id: 'ai', label: 'AI Copilot', icon: Bot },
     { id: 'upload', label: 'Upload', icon: UploadCloud },
     { id: 'logs', label: 'Logs', icon: History },
   ];
@@ -114,6 +115,10 @@ export default function App() {
             onDataUploaded={handleBatchDataUploaded}
             onAddManualLog={handleAddManualLog}
           />
+        )}
+
+        {activeTab === 'ai' && (
+          <AiAssistant />
         )}
       </main>
 
