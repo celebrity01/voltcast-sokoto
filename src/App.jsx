@@ -6,11 +6,13 @@ import DistrictHeatmap from './components/DistrictHeatmap';
 import AnalyticsView from './components/AnalyticsView';
 import ModelEvaluation from './components/ModelEvaluation';
 import OutageLogs from './components/OutageLogs';
+import DataUploader from './components/DataUploader';
 import { SOKOTO_DISTRICTS } from './services/mockDataGenerator';
-import { LayoutDashboard, Zap, MapPin, BarChart3, TestTube2, History } from 'lucide-react';
+import { LayoutDashboard, Zap, MapPin, BarChart3, TestTube2, History, UploadCloud } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const [customUploadedLogs, setCustomUploadedLogs] = useState([]);
 
   // Default prediction state
   const [predictParams, setPredictParams] = useState({
@@ -44,11 +46,21 @@ export default function App() {
     setActiveTab('predictor');
   };
 
+  const handleBatchDataUploaded = (newRecords) => {
+    setCustomUploadedLogs(prev => [...newRecords, ...prev]);
+    setActiveTab('logs');
+  };
+
+  const handleAddManualLog = (newLog) => {
+    setCustomUploadedLogs(prev => [newLog, ...prev]);
+    setActiveTab('logs');
+  };
+
   const mobileNavItems = [
     { id: 'dashboard', label: 'Command', icon: LayoutDashboard },
     { id: 'predictor', label: 'Predictor', icon: Zap },
     { id: 'heatmap', label: 'Heatmap', icon: MapPin },
-    { id: 'trends', label: 'Analytics', icon: BarChart3 },
+    { id: 'upload', label: 'Upload', icon: UploadCloud },
     { id: 'logs', label: 'Logs', icon: History },
   ];
 
@@ -92,7 +104,15 @@ export default function App() {
 
         {activeTab === 'logs' && (
           <OutageLogs 
-            onSimulateEvent={handleSimulateEvent} 
+            onSimulateEvent={handleSimulateEvent}
+            customLogs={customUploadedLogs}
+          />
+        )}
+
+        {activeTab === 'upload' && (
+          <DataUploader 
+            onDataUploaded={handleBatchDataUploaded}
+            onAddManualLog={handleAddManualLog}
           />
         )}
       </main>

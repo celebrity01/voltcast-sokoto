@@ -2,25 +2,30 @@ import React, { useState } from 'react';
 import { RECENT_OUTAGE_LOGS, SOKOTO_DISTRICTS } from '../services/mockDataGenerator';
 import { History, Search, Radio, AlertTriangle, ShieldCheck, Zap } from 'lucide-react';
 
-export default function OutageLogs({ onSimulateEvent }) {
+export default function OutageLogs({ onSimulateEvent, customLogs = [] }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [districtFilter, setDistrictFilter] = useState('ALL');
   const [severityFilter, setSeverityFilter] = useState('ALL');
 
-  const filteredLogs = RECENT_OUTAGE_LOGS.filter(log => {
-    const matchesSearch = log.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          log.cause.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          log.feeder.toLowerCase().includes(searchTerm.toLowerCase());
+  // Combine default mock logs with user-uploaded or manually added custom logs
+  const allLogs = [...customLogs, ...RECENT_OUTAGE_LOGS];
+
+  const filteredLogs = allLogs.filter(log => {
+    const matchesSearch = (log.id || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          (log.cause || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          (log.feeder || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDistrict = districtFilter === 'ALL' || log.district === districtFilter;
-    const matchesSeverity = severityFilter === 'ALL' || log.riskSeverity === severityFilter;
+    const matchesSeverity = severityFilter === 'ALL' || (log.riskSeverity || log.impact || 'Moderate') === severityFilter;
     return matchesSearch && matchesDistrict && matchesSeverity;
   });
 
   const getSeverityBadge = (severity) => {
     switch (severity) {
-      case 'Severe': return <span className="badge badge-crimson">Severe</span>;
+      case 'Severe': 
+      case 'Critical': return <span className="badge badge-crimson">Severe</span>;
       case 'High': return <span className="badge badge-amber">High</span>;
-      case 'Moderate': return <span className="badge badge-cyan">Moderate</span>;
+      case 'Moderate': 
+      case 'Medium': return <span className="badge badge-cyan">Moderate</span>;
       default: return <span className="badge badge-emerald">Low</span>;
     }
   };
@@ -45,7 +50,7 @@ export default function OutageLogs({ onSimulateEvent }) {
           <span className="badge badge-cyan">Simulator Ready</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
           
           <button 
             className="btn-secondary"
@@ -114,7 +119,7 @@ export default function OutageLogs({ onSimulateEvent }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
             <History size={20} color="var(--liquid-cyan)" />
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>
-              Recent Outage Incident Logs
+              Recent Outage Incident Logs ({allLogs.length} Total)
             </h2>
           </div>
 
@@ -178,28 +183,28 @@ export default function OutageLogs({ onSimulateEvent }) {
             </thead>
             <tbody>
               {filteredLogs.length > 0 ? (
-                filteredLogs.map(log => (
-                  <tr key={log.id} style={{ borderBottom: '1px solid rgba(226, 232, 240, 0.6)', transition: 'background 0.2s ease' }}>
+                filteredLogs.map((log, idx) => (
+                  <tr key={log.id || idx} style={{ borderBottom: '1px solid rgba(226, 232, 240, 0.6)', transition: 'background 0.2s ease' }}>
                     <td style={{ padding: '0.85rem 1rem', fontFamily: 'var(--font-heading)', fontWeight: 800, color: 'var(--liquid-cyan)' }}>
-                      {log.id}
+                      {log.id || `INC-${idx + 1}`}
                     </td>
                     <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                      {log.district}
+                      {log.district || log.District || 'Sokoto'}
                     </td>
                     <td style={{ padding: '0.85rem 1rem', color: 'var(--text-muted)', fontWeight: 500 }}>
-                      {log.feeder}
+                      {log.feeder || log['Feeder Line'] || '11kV Feeder'}
                     </td>
                     <td style={{ padding: '0.85rem 1rem', color: 'var(--text-main)', fontWeight: 500 }}>
-                      {log.cause}
+                      {log.cause || log['Root Cause'] || 'Thermal Surge'}
                     </td>
                     <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: 'var(--text-main)' }}>
-                      {log.duration}
+                      {log.duration || `${log['Duration (hrs)'] || 2} hrs`}
                     </td>
                     <td style={{ padding: '0.85rem 1rem', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                      {log.time}
+                      {log.time || log.date || log.Date || '2026-08-01'}
                     </td>
                     <td style={{ padding: '0.85rem 1rem' }}>
-                      {getSeverityBadge(log.riskSeverity)}
+                      {getSeverityBadge(log.riskSeverity || log.impact || log['Impact Level'] || 'Moderate')}
                     </td>
                   </tr>
                 ))

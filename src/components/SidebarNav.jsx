@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Zap, LayoutDashboard, MapPin, BarChart3, TestTube2, History, Settings 
+  Zap, LayoutDashboard, MapPin, BarChart3, TestTube2, History, Settings, UploadCloud 
 } from 'lucide-react';
 
 export default function SidebarNav({ activeTab, setActiveTab }) {
@@ -11,6 +11,7 @@ export default function SidebarNav({ activeTab, setActiveTab }) {
     { id: 'trends', label: 'Analytics & Trends', icon: BarChart3 },
     { id: 'evaluation', label: 'Model Evaluation', icon: TestTube2 },
     { id: 'logs', label: 'Alerts & Logs', icon: History },
+    { id: 'upload', label: 'Upload Data', icon: UploadCloud },
   ];
 
   return (
